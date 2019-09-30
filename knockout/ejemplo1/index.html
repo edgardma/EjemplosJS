@@ -3,14 +3,60 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="css/bootstrap.min.css">    	    
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <title>KnockoutJS</title>
 </head>
-<body>		
-		
+<body>
+	<div class="container">
+    <div class="row">
+      <div class="col-md-6 form-control">
+        <label>Nombre</label>
+      </div>
+      <div>
+        <span class="form-control" data-bind="text: nombre"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-control">
+        <label>Nombre</label>
+      </div>
+      <div>
+        <input type="text" class="form-control" data-bind="textInput: nombre"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-control">
+        <label>Banda favorita</label>
+      </div>
+      <div>
+        <span class="form-control" data-bind="text: bandaFavorita"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-control">
+        <label>Banda favorita</label>
+      </div>
+      <div>
+        <input type="text" class="form-control" data-bind="textInput: bandaFavorita"></span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 alert alert-info" data-bind="html: nombre">
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 alert alert-success" data-bind="html: bandaFavorita">
+
+      </div>
+    </div>
+
+  </div>
 	<script type="text/javascript" src="js/jquery.slim.min.js"></script>
-	<script type="text/javascript" src="js/popper.min.js"></script>	
-	<script type="text/javascript" src="js/bootstrap.min.js"></script>			
-	<script type="text/javascript" src="js/knockout.min.js"></script>			
+	<script type="text/javascript" src="js/popper.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/knockout.min.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
 </body>
 </html>
