@@ -20,3 +20,7 @@ console.error({ c });
 console.info({ d });
 
 console.table({a, b, c, d, x});
+
+c = 'Hola de nuevo';
+
+var miNuevoNombre = 'Prueba 2';
