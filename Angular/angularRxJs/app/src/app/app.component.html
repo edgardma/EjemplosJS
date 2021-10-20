@@ -1,0 +1,9 @@
+<input [(ngModel)]="number1" (ngModelChange)="change()" type="number" >
+<input [(ngModel)]="number2" (ngModelChange)="change()" type="number" >
+
+<p>Operación Suma: {{ total1 }}</p>
+<p>Operación Multiplica: {{ total2 }}</p>
+
+{{ subject.observers.length }}
+
+<router-outlet></router-outlet>
