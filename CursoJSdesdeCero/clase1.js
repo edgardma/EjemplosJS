@@ -246,6 +246,7 @@ props.forEach(name => {
   let valor = Object.getOwnPropertyDescriptor(libro, name).value;
   console.log(`La prop ${name} contiene valor: ${valor}`);
 });
+console.log("-------------------------");
 // Otra forma
 for (let prop in libro) {
   console.log(`La prop ${prop} contiene valor: ${libro[prop]}`);
@@ -254,3 +255,130 @@ for (let prop in libro) {
 // ---------------------------------------------
 // Clases CORE
 // ---------------------------------------------
+const libro2 = {
+  titulo: "Aprendiendo JS",
+  autor: "Carlos Azaustre",
+  numPaginas: 100,
+  editorial: "carlosazaustre.es",
+  precio: "24.90",
+  leer : function() {
+    console.log("He leido el libro")
+  }
+}
+
+// Formas de acceder a las propiedades de un objeto
+libro2.titulo;
+libro2["numPaginas"]
+libro2.titulo = "Desarrollo Web con React"
+libro2.titulo
+let pages = "numPaginas";
+libro2[pages]
+libro2.leer();
+
+// Formas de declarar un objeto
+let libro3 = {}
+libro3.titulo = "Titulo 3"
+
+let libro4 = new Object({titulo: "Titulo 4"});
+libro4.titulo;
+
+let libro5 = {
+  titulo: "Aprendiendo JS",
+  autor: {
+    nombre: 'Carlos Azaustre',
+    edad: 36,
+    redes : {
+      twitch: "twitch.tv/carlosazaustre",
+      tiktok: "tiktok.com/@carlosazaustre"
+    }
+  }
+}
+libro5.autor.nombre
+libro5['autor']['redes']['twitch']
+
+const coche1 = {marca: "Tesla", modelo: "X"}
+const coche2 = {marca: "Tesla", modelo: "X"}
+coche1 === coche2 // false
+coche1.marca === coche2.marca // true
+const coche3 = coche1
+coche3 === coche1 // true
+
+class Coches {
+  constructor(marca, modelo) {
+    this.marca = marca;
+    this.modelo = modelo;
+  }
+}
+
+let coche4 = new Coches("Tesla", "X")
+let coche5 = new Coches("Tesla", "X")
+coche4 === coche5 // false
+
+// Clase number:
+25.5
+0x1F //31
+0xF // 15
+0x10 //16
+5.4e2 //540
+1/0 //Infinity
+1e1000 //Infinity
+"a"/15 //NaN -> Not a number
+
+let numero = 5;
+let numero2 = new Number(5); // Es lo mis que la anterior declaracion
+
+parseInt("15")
+parseInt("1111", 2) // binario -> 15
+parseInt("1111", 16) // hexadecimal -> 4369
+
+parseFloat("5e3") //5000
+let n = 2.5678;
+n.toFixed(2); // Devuelve una cadena de un numero de dos decimales redondeados -> '2.57'
+parseInt(n.toFixed(2)); // Devuelve un numero pero entero -> 2
+parseFloat(n.toFixed(2)); // Devuelve un numero pero numero con dos decimales -> 2.57
+n.toExponential(2); // 2.57e+0
+
+(1111).toString(); // convertir el numero a cadena
+(15).toString(2); // convierte el numero a cadena pero en binario -> '1111'
+(4369).toString(16); // convierte el numero a cadena pero en base hexadecimal -> '1111'
+
+// clase Math
+Math.PI // 3.141592653589793
+Math.E // 2.718281828459045
+Math.random() // Número aleatorio, que es distinto cada vez que se invoca -> 0.3226225382501957
+Math.random() // 0.30844638326386553
+Math.pow(2, 6) // 64
+2 ** 6 // 64
+Math.min(2, 4, 6) //2
+Math.max(4, 6, 2) //6
+
+// Array
+let miArrayNumeros = [1, 2, 3]
+let miArrayCadenas = ["cadena 1", "cadena 2", "cadena 3"];
+let miArrayObjetos = [
+  { propiedad: "valor" }, 
+  { propiedad: "valor" }];
+let miArrayArreglos = [
+  [2, 4],
+  [3, 6]
+];
+miArrayArreglos[0][0] //2
+miArrayArreglos[1][1] //6
+
+let miArrayVariado = [
+  1,
+  true,
+  [3, 2],
+  "hola",
+  {clave: "valor"}
+];
+miArrayVariado.length //5
+
+let mmiArray2 = [3, 6, 1, 4];
+miArray2.sort() //[ 1, 2, 3, 4 ]
+miArray2.pop() //4
+miArray2 //[ 1, 2, 3 ]
+miArray2.push(2); //4
+miArray2 // [ 1, 2, 3, 2 ]
+miArray2.sort() //[ 1, 2, 2, 3 ]
+miArray2.reverse() //[ 3, 2, 2, 1 ]
