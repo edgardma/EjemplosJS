@@ -374,11 +374,50 @@ let miArrayVariado = [
 ];
 miArrayVariado.length //5
 
-let mmiArray2 = [3, 6, 1, 4];
-miArray2.sort() //[ 1, 2, 3, 4 ]
-miArray2.pop() //4
-miArray2 //[ 1, 2, 3 ]
-miArray2.push(2); //4
-miArray2 // [ 1, 2, 3, 2 ]
-miArray2.sort() //[ 1, 2, 2, 3 ]
-miArray2.reverse() //[ 3, 2, 2, 1 ]
+let miArray3 = [3, 6, 1, 4];
+miArray3.sort() //[ 1, 2, 3, 4 ]
+miArray3.pop() //6
+miArray3 //[ 1, 2, 3 ]
+miArray3.push(2); //4
+miArray3 // [ 1, 2, 3, 2 ]
+miArray3.sort() //[ 1, 2, 2, 3 ]
+miArray3.reverse() //[ 3, 2, 2, 1 ]
+
+let valor = 3;
+const template = [
+  "<li>",
+  valor,
+  "</li>"
+].join("");
+console.log(template); // '<li>3</li>'
+
+let miArray4 = [2, 4, 6, 8]
+let raices = miArray4.map(function(item) {
+  return Math.sqrt(item)
+});
+raices // [ 1.4142135623730951, 2, 2.449489742783178, 2.8284271247461903 ]
+let raices2 = miArray4.map(Math.sqrt)
+raices2 // [ 1.4142135623730951, 2, 2.449489742783178, 2.8284271247461903 ]
+
+let miArray5 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+let resultado = miArray5.filter(item => item % 3 === 0) // Multiplos de 3
+resultado // [ 3, 6, 9, 12, 15 ]
+miArray5
+miArray5.slice(2)
+miArray5.slice(2, 4)
+
+// Cadenas
+"javascript"[2] // 'v'
+"javascript".length // 10
+"javascript".charCodeAt(2) // 118
+"javascript".indexOf("script") // 4
+"javascript".substring(2,4) // 'va'
+
+let texto = "Hola"
+let texto2 = new String("Hola")
+
+const fecha = new Date()
+fecha.toString() // 'Sun Feb 27 2022 19:07:33 GMT-0500 (hora estándar de Perú)'
+fecha.toString().split(" ")[4] // '19:17:07' // La Hora
+fecha.toString().split(" ")[4].split(":") // [ '19', '17', '07' ]
+
