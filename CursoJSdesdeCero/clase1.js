@@ -421,3 +421,43 @@ fecha.toString() // 'Sun Feb 27 2022 19:07:33 GMT-0500 (hora estándar de Perú)
 fecha.toString().split(" ")[4] // '19:17:07' // La Hora
 fecha.toString().split(" ")[4].split(":") // [ '19', '17', '07' ]
 
+// ================================================0
+// Arreglos
+const posts = [{
+  id: 1,
+  title: 'Mi primer post',
+  tags: ['javascript', 'webdevelopment']
+}, {
+  id: 2,
+  title: 'Mi experiencia con React',
+  image: 'https://img.com/2',
+  tags: ['javascript', 'webdevelopment', 'react']
+}, {
+  id: 3,
+  title: 'Por qué dejé Angular',
+  image: 'https://img.com/3',
+  tags: ['javascript', 'webdevelopment', 'angular']
+}]
+
+posts.find(post => post.id == 1); // Devuelve el elemento con id = 1
+posts.some(post => post.id == 1); // true
+posts.some(post => post.tags.includes('vue')); // false
+posts.some(post => post.tags.includes('react')); // true
+posts.every(post => post.tags.includes('react')); // Evalua si se cumple en todos los elementos - false
+posts.every(post => post.tags.includes('javascript')); // Evalua si se cumple en todos los elementos - true
+
+posts.map(post => post.title) // Devuelve un array con los atributos title
+posts.filter(post => post.tags.includes('angular')); // Devuelve un array con el eleento que cumpla con la condición
+posts.filter(post => post.image !== undefined) // Devuelve solo dos elementos
+
+posts.reduce((allTags, post) => {
+  return [...allTags, ...post.tags]
+}, []); // Junta el contenido del elemento tags en un nuevo array (se repite el contenido)
+
+posts.reduce((allTags, post) => {
+  return Array.from(new Set([...allTags, ...post.tags]))
+}, []); // Junta el contenido del elemento tags en un nuevo array (no repite el contenido)
+
+posts.reduce((allTags, post) => {
+  return [...allTags, ...post.tags]
+}, []).filter((post, index, self) => index === self.indexOf(post)); // Junta el contenido del elemento tags en un nuevo array (no repite el contenido)
