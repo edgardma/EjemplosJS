@@ -461,3 +461,62 @@ posts.reduce((allTags, post) => {
 posts.reduce((allTags, post) => {
   return [...allTags, ...post.tags]
 }, []).filter((post, index, self) => index === self.indexOf(post)); // Junta el contenido del elemento tags en un nuevo array (no repite el contenido)
+
+// ===========================================================================================
+// Objeto THIS
+// 1ra forma
+var obj2 = {
+  foo: function() { return 'foo'},
+  bar: function () {
+    var that = this;
+    document.addEventListener('click', function (event) {
+      that.foo()
+    })
+  }
+}
+
+// 2da forma
+var obj2 = {
+  foo: function() { return 'foo'},
+  bar: function () {
+    document.addEventListener('click', function (event) {
+      this.foo()
+    }).bind(this)
+  }
+}
+
+// 3ra forma
+var obj2 = {
+  foo: function() { return 'foo'},
+  bar: function () {
+    document.addEventListener('click', event => this.foo())
+  }
+}
+
+// ===========================================================================================
+// Clousures
+const saludar2 = function(nombre) {
+  return "Hola " + nombre;
+}
+
+saludar2("Carlos")
+
+saludar2; // ƒ saludar2()
+
+const a2 = "Hey! ";
+function global() {
+  const b = "¿Que ";
+  
+  function local() {
+    const c = "tal?"
+    return a2 + b + c;
+  }
+  
+  return local;
+}
+
+global(); // ƒ local()
+global()(); // 'Hey! ¿Que tal?'
+const closure = global();
+closure(); // 'Hey! ¿Que tal?'
+
