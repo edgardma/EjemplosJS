@@ -17,6 +17,24 @@ const clamp = value => {
   return value
 }
 
+const getNextFistIndex = (index, instructions) => {
+  let fists = 1
+  for (let i = index + 1; i < instructions.length; i++) {
+    if (instructions[i] === '🤜') fists++
+    if (instructions[i] === '🤛') fists--
+    if (fists === 0) return i
+  }
+}
+
+const getPrevFistIndex = (index, instructions) => {
+  let fists = 1
+  for (let i = index - 1; i >= 0; i--) {
+    if (instructions[i] === '🤜') fists--
+    if (instructions[i] === '🤛') fists++
+    if (fists === 0) return i
+  }
+}
+
 function translate (string) {
   const memory = [0]
 
@@ -29,7 +47,7 @@ function translate (string) {
   const actions = {
     '👉': () => {
       pointer++
-      memory[pointer] ??= 0 // Solo le asigna 0 solo si la posición es indefinido
+      memory[pointer] ??= 0 // ??= Significa que solo le asigna 0 si la posición es indefinido
     },
     '👈': () => {
       pointer--
@@ -43,12 +61,12 @@ function translate (string) {
     },
     '🤜': () => {
       if (memory[pointer] === 0) {
-        index = arrayOfInstructions.indexOf('🤛', index)
+        index = getNextFistIndex(index, arrayOfInstructions)
       }
     },
     '🤛': () => {
       if (memory[pointer] !== 0) {
-        index = arrayOfInstructions.lastIndexOf('🤜', index)
+        index = getPrevFistIndex(index, arrayOfInstructions)
       }
     },
     '👊': () => {
@@ -66,6 +84,8 @@ function translate (string) {
   return output
 }
 
+
 console.log(translate('👇🤜👇👇👇👇👇👇👇👉👆👈🤛👉👇👊👇🤜👇👉👆👆👆👆👆👈🤛👉👆👆👊👆👆👆👆👆👆👆👊👊👆👆👆👊'))
+console.log(translate('👉👆👆👆👆👆👆👆👆🤜👇👈👆👆👆👆👆👆👆👆👆👉🤛👈👊👉👉👆👉👇🤜👆🤛👆👆👉👆👆👉👆👆👆🤜👉🤜👇👉👆👆👆👈👈👆👆👆👉🤛👈👈🤛👉👇👇👇👇👇👊👉👇👉👆👆👆👊👊👆👆👆👊👉👇👊👈👈👆🤜👉🤜👆👉👆🤛👉👉🤛👈👇👇👇👇👇👇👇👇👇👇👇👇👇👇👊👉👉👊👆👆👆👊👇👇👇👇👇👇👊👇👇👇👇👇👇👇👇👊👉👆👊👉👆👊'))
 
 module.exports = translate
