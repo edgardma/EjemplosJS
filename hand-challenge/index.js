@@ -42,13 +42,16 @@ function translate (string) {
       memory[pointer] = clamp(memory[pointer] - 1)
     },
     '🤜': () => {
-      return arrayOfInstructions.indexOf('🤛', index)
+      if (memory[pointer] === 0) {
+        index = arrayOfInstructions.indexOf('🤛', index)
+      }
     },
     '🤛': () => {
-      return arrayOfInstructions.indexOf('🤜', index)
+      if (memory[pointer] !== 0) {
+        index = arrayOfInstructions.lastIndexOf('🤜', index)
+      }
     },
     '👊': () => {
-      //console.log({ output })
       output += String.fromCharCode(memory[pointer])
     }
   }
@@ -56,7 +59,7 @@ function translate (string) {
   while (index < arrayOfInstructions.length) {
     const action = arrayOfInstructions[index]
     actions[action]()
-    console.log({ action, index, output })
+    console.log({ action, index, pointer, output })
     index++
   }
 
