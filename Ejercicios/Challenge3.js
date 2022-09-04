@@ -20,7 +20,7 @@ function isPrime(number) {
   if (number < 2)
     return false;
   
-  for (var i = 2; i < number; i++) {
+  for (let i = 2; i < number; i++) {
     if ((number % i) == 0)
       return false
   }
@@ -29,11 +29,10 @@ function isPrime(number) {
 }
 
 function printFirst100PrimeNumbers() {
-  for (var i = 0; i <= 100; i++) {
+  for (let i = 0; i <= 100; i++) {
     if (isPrime(i))
       console.log(i);
   }
 }
 
 printFirst100PrimeNumbers();
-
