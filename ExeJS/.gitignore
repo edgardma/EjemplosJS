@@ -1,0 +1,22 @@
+# Dependencias
+node_modules
+
+# Compilación y build
+dist
+build
+out
+
+# Archivos de sistema y editor
+.DS_Store
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de configuración de IDE/editor
+.vscode/
+
+# Archivos de ejecución/temporales
+*.exe
+*.log

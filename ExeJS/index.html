@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 script-src 'self';
+                 style-src 'self' 'unsafe-inline';
+                 img-src 'self' data:;
+                 child-src 'self';
+                 frame-src 'self';">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ejecutor de JavaScript</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>
+    <h1 id="title">Ejecutor de JavaScript</h1>
+    <div class="actions">
+      <button id="btn-open">Abrir</button>
+      <button id="btn-save">Guardar</button>
+      <button id="btn-saveas">Guardar como…</button>
+      <span class="divider"></span>
+
+      <label class="inline">
+        Auto-guardar:
+        <input id="autosave-enable" type="checkbox" />
+      </label>
+      <label class="inline">
+        cada
+        <input id="autosave-secs" type="number" min="5" value="30" style="width:64px" />
+        s
+      </label>
+      <label class="inline">
+        mantener
+        <input id="autosave-keep" type="number" min="1" value="10" style="width:64px" />
+        versiones
+      </label>
+      <span id="autosave-status" class="hint"></span>
+
+      <span class="divider"></span>
+      <select id="mode">
+        <option value="script">Modo: Script (IIFE)</option>
+        <option value="module">Modo: Módulo ES (ESM)</option>
+      </select>
+      <button id="btn-run">Ejecutar (Ctrl+Enter)</button>
+      <button id="btn-clear">Limpiar salida</button>
+      <button id="btn-copy">Copiar salida</button>
+    </div>
+  </header>
+
+  <main class="split3">
+    <section class="left">
+      <label for="code">Código JavaScript</label>
+      <textarea id="code" spellcheck="false">// Escribe tu código aquí
+// Script: usa 'return'.
+// Módulo ES: import/top-level await; usa 'export default ...' para retornar.
+console.log("Hola desde la app");
+export default 2 + 3;
+</textarea>
+    </section>
+
+    <section class="center">
+      <label>Salida</label>
+      <div id="output" class="output"></div>
+      <iframe id="runner" title="sandbox" class="hidden" src="./executor.html"></iframe>
+    </section>
+
+    <aside class="right">
+      <div class="history-head">
+        <label>Historial</label>
+        <div class="history-actions">
+          <button id="btn-save-history" title="Guardar historial a disco">Guardar</button>
+          <button id="btn-clear-history" title="Borrar historial">Borrar</button>
+        </div>
+      </div>
+      <div id="history" class="history"></div>
+    </aside>
+  </main>
+
+  <script src="./renderer.js"></script>
+</body>
+</html>

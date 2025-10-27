@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'none';
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:;
+                   connect-src 'none';
+                   img-src 'none';
+                   style-src 'none'"
+        />
+        <title>Sandbox</title>
+    </head>
+    <body>
+        <script>
+            (function () {
+                const originalLog = console.log;
+                console.log = (...args) => {
+                    try {
+                        parent.postMessage(
+                            {
+                                type: "console",
+                                message: args.map(String).join(" "),
+                            },
+                            "*",
+                        );
+                    } catch {}
+                    originalLog.apply(console, args);
+                };
+
+                async function runAsScript(code) {
+                    const fn = new Function('"use strict";\n' + code);
+                    return fn();
+                }
+
+                async function runAsModule(code) {
+                    const blob = new Blob([code], { type: "text/javascript" });
+                    const url = URL.createObjectURL(blob);
+                    try {
+                        const mod = await import(url);
+                        return "default" in mod
+                            ? mod.default
+                            : "[Módulo cargado sin export default]";
+                    } finally {
+                        URL.revokeObjectURL(url);
+                    }
+                }
+
+                function needsModule(code) {
+                    // Heurística simple: si contiene import/export o await "sueltos", tratamos como módulo.
+                    // (No es un parser completo, pero funciona muy bien en la práctica)
+                    return (
+                        /\bimport\s|\bexport\s/.test(code) ||
+                        /\bawait\b/.test(code)
+                    );
+                }
+
+                addEventListener("message", async (ev) => {
+                    const { type, code, mode = "script" } = ev.data || {};
+                    if (type !== "run") return;
+
+                    try {
+                        const runAsESM = mode === "module" || needsModule(code);
+                        const ret = runAsESM
+                            ? await runAsModule(code)
+                            : await runAsScript(code);
+                        parent.postMessage(
+                            { type: "result", returnValue: ret },
+                            "*",
+                        );
+                    } catch (e) {
+                        parent.postMessage(
+                            {
+                                type: "error",
+                                error: String(e?.message ?? e),
+                                stack: e?.stack,
+                            },
+                            "*",
+                        );
+                    }
+                });
+            })();
+        </script>
+    </body>
+</html>
