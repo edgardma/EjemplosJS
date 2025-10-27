@@ -1,4 +1,4 @@
-const codeEl = document.getElementById('code');
+// ====== Referencias UI
 const outputEl = document.getElementById('output');
 const runBtn = document.getElementById('btn-run');
 const clearBtn = document.getElementById('btn-clear');
@@ -19,12 +19,44 @@ const historyEl = document.getElementById('history');
 const clearHistoryBtn = document.getElementById('btn-clear-history');
 const saveHistoryBtn = document.getElementById('btn-save-history');
 
+// ====== Monaco
+let editor;
+const defaultCode = `// Escribe tu código aquí
+// Script: usa 'return'.
+// Módulo ES: import/top-level await; usa 'export default ...' para retornar.
+console.log("Hola desde la app");
+export default 2 + 3;`;
+
+function initMonaco() {
+  return new Promise((resolve) => {
+    window.require.config({ paths: { 'vs': './node_modules/monaco-editor/min/vs' } });
+    window.require(['vs/editor/editor.main'], () => {
+      editor = monaco.editor.create(document.getElementById('editor'), {
+        value: defaultCode,
+        language: 'javascript',
+        automaticLayout: true,
+        theme: 'vs-dark',
+        minimap: { enabled: false },
+        lineNumbers: 'on',
+        wordWrap: 'on',
+        fontLigatures: true
+      });
+      editor.onDidChangeModelContent(() => setDirty(true));
+      resolve();
+    });
+  });
+}
+
+function getCode() { return editor ? editor.getValue() : ''; }
+function setCode(v) { if (editor) editor.setValue(v ?? ''); }
+
+// ====== Estado
 let currentFilePath = null;
 let dirty = false;
 let autosaveTimer = null;
 
 // Historial persistente
-let runs = []; // [{id, ts, mode, code, logs, result, error, durationMs, ok, stack}]
+let runs = [];
 let currentRun = null;
 
 // ===== Utils
@@ -48,10 +80,7 @@ function printLine(text, cls = 'log') {
   if (currentRun) currentRun.logs.push({ type: cls, text });
 }
 
-function nextRunId() {
-  const n = (runs.length + 1).toString().padStart(3, '0');
-  return n;
-}
+function nextRunId() { return (runs.length + 1).toString().padStart(3, '0'); }
 
 function renderHistory() {
   historyEl.innerHTML = '';
@@ -66,7 +95,7 @@ function renderHistory() {
 
     const meta = document.createElement('div');
     meta.className = 'history-meta';
-    const summary = r.ok ? (r.resultPreview ?? 'sin retorno') : (r.error?.split('\n')[0] ?? 'error');
+    const summary = r.ok ? (r.resultPreview ?? 'sin retorno') : (r.error?.split('\\n')[0] ?? 'error');
     meta.textContent = `Duración: ${r.durationMs}ms • ${summary}`;
 
     const actions = document.createElement('div');
@@ -89,7 +118,7 @@ function renderHistory() {
     btnRerun.textContent = 'Re-ejecutar';
     btnRerun.addEventListener('click', (e) => {
       e.stopPropagation();
-      codeEl.value = r.code;
+      setCode(r.code);
       modeSel.value = r.mode;
       setDirty(true);
       runCode();
@@ -100,21 +129,13 @@ function renderHistory() {
     btnExport.addEventListener('click', async (e) => {
       e.stopPropagation();
       const text = buildRunText(r);
-      try {
-        await navigator.clipboard.writeText(text);
-        window.ui?.message('info', 'Salida del historial copiada al portapapeles.');
-      } catch {
-        window.ui?.message('error', 'No se pudo copiar la salida.');
-      }
+      try { await navigator.clipboard.writeText(text); window.ui?.message('info', 'Salida del historial copiada al portapapeles.'); }
+      catch { window.ui?.message('error', 'No se pudo copiar la salida.'); }
     });
 
     actions.append(btnShow, btnRerun, btnExport);
     el.append(title, meta, actions);
-    el.addEventListener('click', () => {
-      codeEl.value = r.code;
-      modeSel.value = r.mode;
-      setDirty(true);
-    });
+    el.addEventListener('click', () => { setCode(r.code); modeSel.value = r.mode; setDirty(true); });
 
     historyEl.appendChild(el);
   }
@@ -125,25 +146,18 @@ function buildRunText(r) {
     `# Ejecución ${r.id} (${r.mode.toUpperCase()})`,
     `Fecha: ${fmtDate(new Date(r.ts))}`,
     `Duración: ${r.durationMs}ms`,
-    `Código:\n${r.code}`,
+    `Código:\\n${r.code}`,
     `---`,
     `Salida:`
   ];
   r.logs.forEach(ln => lines.push(`[${ln.type}] ${ln.text}`));
   if (r.ok) lines.push(`[ret] ${String(r.result)}`);
-  else lines.push(`[err] ${r.error}\n${r.stack ?? ''}`);
-  return lines.join('\n');
+  else lines.push(`[err] ${r.error}\\n${r.stack ?? ''}`);
+  return lines.join('\\n');
 }
 
 // ===== Persistencia de historial
-const debounced = (fn, ms = 500) => {
-  let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), ms);
-  };
-};
-
+const debounced = (fn, ms = 500) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
 async function loadHistory() {
   const res = await window.history.load();
   if (res?.ok) {
@@ -152,80 +166,52 @@ async function loadHistory() {
     renderHistory();
   }
 }
-
-const saveHistoryNow = async () => {
-  const data = { version: 1, runs };
-  await window.history.save(data);
-};
+const saveHistoryNow = async () => { await window.history.save({ version: 1, runs }); };
 const saveHistory = debounced(saveHistoryNow, 600);
 
-clearHistoryBtn.addEventListener('click', async () => {
+clearHistoryBtn?.addEventListener('click', async () => {
   runs = [];
   renderHistory();
   await window.history.clear();
 });
-
-saveHistoryBtn.addEventListener('click', saveHistoryNow);
+saveHistoryBtn?.addEventListener('click', saveHistoryNow);
 
 // ===== Auto-guardado incremental
 function startAutosave() {
   stopAutosave();
-  const secs = Math.max(5, Number(autosaveSecsEl.value || 30));
-  const keep = Math.max(1, Number(autosaveKeepEl.value || 10));
+  const secs = Math.max(5, Number(autosaveSecsEl?.value || 30));
+  const keep = Math.max(1, Number(autosaveKeepEl?.value || 10));
   autosaveTimer = setInterval(async () => {
     try {
+      const code = getCode();
       if (currentFilePath) {
-        await window.files.save(currentFilePath, codeEl.value);
+        await window.files.save(currentFilePath, code);
         autosaveStatusEl.textContent = `Auto-guardado en ${currentFilePath}`;
       } else {
-        const res = await window.files.autoSave(codeEl.value, keep);
-        if (res?.ok) {
-          autosaveStatusEl.textContent = `Auto-guardado (${keep} versiones) en ${res.dir}`;
-        }
+        const res = await window.files.autoSave(code, keep);
+        if (res?.ok) autosaveStatusEl.textContent = `Auto-guardado (${keep} versiones) en ${res.dir}`;
       }
     } catch {
       autosaveStatusEl.textContent = `Auto-guardado falló`;
     }
   }, secs * 1000);
-  autosaveStatusEl.textContent = `Auto-guardado activo (${secs}s, mantener ${keep})`;
+  autosaveStatusEl.textContent = `Auto-guardado activo (${secs}s${autosaveKeepEl ? `, mantener ${Math.max(1, Number(autosaveKeepEl.value||10))}`:''})`;
 }
-
-function stopAutosave() {
-  if (autosaveTimer) clearInterval(autosaveTimer);
-  autosaveTimer = null;
-  autosaveStatusEl.textContent = '';
-}
+function stopAutosave() { if (autosaveTimer) clearInterval(autosaveTimer); autosaveTimer = null; autosaveStatusEl.textContent = ''; }
 
 // ===== Ejecución
 function runCode() {
   outputEl.innerHTML = '';
-  const code = codeEl.value;
+  const code = getCode();
   const mode = modeSel.value;
 
-  currentRun = {
-    id: nextRunId(),
-    ts: Date.now(),
-    mode,
-    code,
-    logs: [],
-    ok: false,
-    result: undefined,
-    resultPreview: undefined,
-    error: null,
-    stack: null,
-    durationMs: 0,
-    _t0: performance.now()
-  };
+  currentRun = { id: nextRunId(), ts: Date.now(), mode, code, logs: [], ok: false, result: undefined, resultPreview: undefined, error: null, stack: null, durationMs: 0, _t0: performance.now() };
 
   const send = () => iframe.contentWindow.postMessage({ type: 'run', code, mode }, '*');
 
   if (iframe.dataset.ready === '1') send();
   else {
-    const onLoad = () => {
-      iframe.dataset.ready = '1';
-      iframe.removeEventListener('load', onLoad);
-      send();
-    };
+    const onLoad = () => { iframe.dataset.ready = '1'; iframe.removeEventListener('load', onLoad); send(); };
     iframe.addEventListener('load', onLoad);
     iframe.src = './executor.html';
   }
@@ -238,7 +224,6 @@ window.addEventListener('message', (ev) => {
   } else if (type === 'result') {
     const ret = ev.data.returnValue;
     printLine(`↩︎ Retorno: ${String(ret)}`, 'ret');
-
     if (currentRun) {
       currentRun.ok = true;
       currentRun.result = ret;
@@ -252,7 +237,6 @@ window.addEventListener('message', (ev) => {
   } else if (type === 'error') {
     printLine(`✖ Error: ${ev.data.error}`, 'err');
     if (ev.data.stack) printLine(ev.data.stack, 'err');
-
     if (currentRun) {
       currentRun.ok = false;
       currentRun.error = ev.data.error;
@@ -266,74 +250,51 @@ window.addEventListener('message', (ev) => {
   }
 });
 
-runBtn.addEventListener('click', runCode);
-clearBtn.addEventListener('click', () => (outputEl.innerHTML = ''));
-copyBtn.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(outputEl.innerText || '');
-    window.ui?.message('info', 'Salida copiada al portapapeles.');
-  } catch {
-    window.ui?.message('error', 'No se pudo copiar la salida.');
-  }
+runBtn?.addEventListener('click', runCode);
+clearBtn?.addEventListener('click', () => (outputEl.innerHTML = ''));
+copyBtn?.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(outputEl.innerText || ''); window.ui?.message('info', 'Salida copiada al portapapeles.'); }
+  catch { window.ui?.message('error', 'No se pudo copiar la salida.'); }
 });
 
-// Teclas rápidas
+// Atajos
 window.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key === 'Enter') runCode();
-  if (e.ctrlKey && e.key.toLowerCase() === 's') {
-    e.preventDefault(); doSave();
-  }
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
-    e.preventDefault(); doSaveAs();
-  }
-  if (e.ctrlKey && e.key.toLowerCase() === 'o') {
-    e.preventDefault(); doOpen();
-  }
+  if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); doSave(); }
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') { e.preventDefault(); doSaveAs(); }
+  if (e.ctrlKey && e.key.toLowerCase() === 'o') { e.preventDefault(); doOpen(); }
 });
-
-codeEl.addEventListener('input', () => setDirty(true));
 
 // ===== Archivo
 async function doOpen() {
-  if (dirty) {
-    const ok = confirm('Hay cambios sin guardar. ¿Deseas continuar sin guardar?');
-    if (!ok) return;
-  }
+  if (dirty) { const ok = confirm('Hay cambios sin guardar. ¿Deseas continuar sin guardar?'); if (!ok) return; }
   const res = await window.files.open();
   if (res?.canceled) return;
-  codeEl.value = res.content ?? '';
+  setCode(res.content ?? '');
   currentFilePath = res.filePath ?? null;
   setDirty(false);
   outputEl.innerHTML = '';
 }
-
 async function doSave() {
   if (!currentFilePath) return doSaveAs();
-  await window.files.save(currentFilePath, codeEl.value);
+  await window.files.save(currentFilePath, getCode());
   setDirty(false);
 }
-
 async function doSaveAs() {
   const suggested = currentFilePath ? currentFilePath.split(/[\\/]/).pop() : 'script.js';
-  const res = await window.files.saveAs(suggested, codeEl.value);
+  const res = await window.files.saveAs(suggested, getCode());
   if (res?.canceled) return;
   currentFilePath = res.filePath;
   setDirty(false);
 }
 
-// ===== Auto-guardado UI
-autosaveEnableEl.addEventListener('change', () => {
-  if (autosaveEnableEl.checked) startAutosave();
-  else stopAutosave();
-});
-autosaveSecsEl.addEventListener('change', () => {
-  if (autosaveEnableEl.checked) startAutosave();
-});
-autosaveKeepEl.addEventListener('change', () => {
-  if (autosaveEnableEl.checked) startAutosave();
-});
+// Auto-guardado UI
+autosaveEnableEl?.addEventListener('change', () => { autosaveEnableEl.checked ? startAutosave() : stopAutosave(); });
+autosaveSecsEl?.addEventListener('change', () => { if (autosaveEnableEl.checked) startAutosave(); });
+autosaveKeepEl?.addEventListener('change', () => { if (autosaveEnableEl.checked) startAutosave(); });
 
-// ===== Inicio
+// Inicio
 (async function init() {
+  await initMonaco();
   await loadHistory();
 })();

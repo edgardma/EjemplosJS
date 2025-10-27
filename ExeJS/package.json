@@ -20,12 +20,17 @@
       "index.html",
       "executor.html",
       "styles.css",
-      "package.json"
+      "package.json",
+      "node_modules/monaco-editor/min/**"
     ],
     "asar": true,
-    "directories": { "output": "dist" },
+    "directories": {
+      "output": "dist"
+    },
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "build/icon.ico",
       "artifactName": "${productName}-${version}-Setup.${ext}"
     },
@@ -35,5 +40,8 @@
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false
     }
+  },
+  "dependencies": {
+    "monaco-editor": "^0.45.0"
   }
 }
