@@ -21,7 +21,8 @@
       "executor.html",
       "styles.css",
       "package.json",
-      "node_modules/monaco-editor/min/**"
+      "node_modules/monaco-editor/min/**",
+      "src/**"
     ],
     "asar": true,
     "directories": {
