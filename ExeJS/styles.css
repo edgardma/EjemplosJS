@@ -76,8 +76,9 @@ input[type="number"] {
 /* MAIN SPLIT */
 main.split3 {
     display: grid;
-    grid-template-columns: 1fr 1fr 320px;
+    grid-template-columns: 1fr 1fr var(--history-collapsed); /* por defecto: colapsado */
     height: calc(100% - 56px);
+    transition: grid-template-columns 0.2s ease;
 }
 section,
 aside {
@@ -203,4 +204,35 @@ label {
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #5b5be0;
+}
+:root {
+    --history-width: 320px;
+    --history-collapsed: 36px; /* ancho cuando está minimizado */
+}
+
+body.has-history-open main.split3 {
+    grid-template-columns: 1fr 1fr var(--history-width);
+}
+
+aside.right {
+    position: relative;
+    overflow: hidden;
+    border-left: 1px solid #2d2d3a;
+}
+
+body:not(.has-history-open) aside.right .history-head,
+body:not(.has-history-open) aside.right .history {
+    opacity: 0;
+    pointer-events: none;
+}
+
+body:not(.has-history-open) aside.right::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #5b5be0 0%, transparent 100%);
+    opacity: 0.4;
 }

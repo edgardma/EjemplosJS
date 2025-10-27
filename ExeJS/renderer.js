@@ -1,23 +1,24 @@
 // ====== Referencias UI
-const outputEl = document.getElementById('output');
-const runBtn = document.getElementById('btn-run');
-const clearBtn = document.getElementById('btn-clear');
-const copyBtn = document.getElementById('btn-copy');
-const openBtn = document.getElementById('btn-open');
-const saveBtn = document.getElementById('btn-save');
-const saveAsBtn = document.getElementById('btn-saveas');
-const modeSel = document.getElementById('mode');
-const iframe = document.getElementById('runner');
-const titleEl = document.getElementById('title');
+const outputEl = document.getElementById("output");
+const runBtn = document.getElementById("btn-run");
+const clearBtn = document.getElementById("btn-clear");
+const copyBtn = document.getElementById("btn-copy");
+const openBtn = document.getElementById("btn-open");
+const saveBtn = document.getElementById("btn-save");
+const saveAsBtn = document.getElementById("btn-saveas");
+const modeSel = document.getElementById("mode");
+const iframe = document.getElementById("runner");
+const titleEl = document.getElementById("title");
 
-const autosaveEnableEl = document.getElementById('autosave-enable');
-const autosaveSecsEl = document.getElementById('autosave-secs');
-const autosaveKeepEl = document.getElementById('autosave-keep');
-const autosaveStatusEl = document.getElementById('autosave-status');
+const autosaveEnableEl = document.getElementById("autosave-enable");
+const autosaveSecsEl = document.getElementById("autosave-secs");
+const autosaveKeepEl = document.getElementById("autosave-keep");
+const autosaveStatusEl = document.getElementById("autosave-status");
 
-const historyEl = document.getElementById('history');
-const clearHistoryBtn = document.getElementById('btn-clear-history');
-const saveHistoryBtn = document.getElementById('btn-save-history');
+const historyEl = document.getElementById("history");
+const clearHistoryBtn = document.getElementById("btn-clear-history");
+const saveHistoryBtn = document.getElementById("btn-save-history");
+const toggleHistoryBtn = document.getElementById("btn-toggle-history");
 
 // ====== Monaco
 let editor;
@@ -29,17 +30,19 @@ export default 2 + 3;`;
 
 function initMonaco() {
   return new Promise((resolve) => {
-    window.require.config({ paths: { 'vs': './node_modules/monaco-editor/min/vs' } });
-    window.require(['vs/editor/editor.main'], () => {
-      editor = monaco.editor.create(document.getElementById('editor'), {
+    window.require.config({
+      paths: { vs: "./node_modules/monaco-editor/min/vs" },
+    });
+    window.require(["vs/editor/editor.main"], () => {
+      editor = monaco.editor.create(document.getElementById("editor"), {
         value: defaultCode,
-        language: 'javascript',
+        language: "javascript",
         automaticLayout: true,
-        theme: 'vs-dark',
+        theme: "vs-dark",
         minimap: { enabled: false },
-        lineNumbers: 'on',
-        wordWrap: 'on',
-        fontLigatures: true
+        lineNumbers: "on",
+        wordWrap: "on",
+        fontLigatures: true,
       });
       editor.onDidChangeModelContent(() => setDirty(true));
       resolve();
@@ -47,8 +50,12 @@ function initMonaco() {
   });
 }
 
-function getCode() { return editor ? editor.getValue() : ''; }
-function setCode(v) { if (editor) editor.setValue(v ?? ''); }
+function getCode() {
+  return editor ? editor.getValue() : "";
+}
+function setCode(v) {
+  if (editor) editor.setValue(v ?? "");
+}
 
 // ====== Estado
 let currentFilePath = null;
@@ -61,18 +68,20 @@ let currentRun = null;
 
 // ===== Utils
 function fmtDate(d) {
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 function setDirty(d) {
   dirty = d;
-  const base = currentFilePath ? currentFilePath.split(/[\\/]/).pop() : 'Ejecutor de JavaScript';
-  titleEl.textContent = (dirty ? '● ' : '') + base;
+  const base = currentFilePath
+    ? currentFilePath.split(/[\\/]/).pop()
+    : "Ejecutor de JavaScript";
+  titleEl.textContent = (dirty ? "● " : "") + base;
 }
 
-function printLine(text, cls = 'log') {
-  const div = document.createElement('div');
+function printLine(text, cls = "log") {
+  const div = document.createElement("div");
   div.className = cls;
   div.textContent = text;
   outputEl.appendChild(div);
@@ -80,43 +89,47 @@ function printLine(text, cls = 'log') {
   if (currentRun) currentRun.logs.push({ type: cls, text });
 }
 
-function nextRunId() { return (runs.length + 1).toString().padStart(3, '0'); }
+function nextRunId() {
+  return (runs.length + 1).toString().padStart(3, "0");
+}
 
 function renderHistory() {
-  historyEl.innerHTML = '';
+  historyEl.innerHTML = "";
   for (const r of runs.slice().reverse()) {
-    const el = document.createElement('div');
-    el.className = 'history-item';
+    const el = document.createElement("div");
+    el.className = "history-item";
     el.dataset.id = r.id;
 
-    const title = document.createElement('div');
-    title.className = 'history-title';
-    title.textContent = `${r.ok ? '✅' : '❌'} ${r.mode.toUpperCase()} • ${fmtDate(new Date(r.ts))}`;
+    const title = document.createElement("div");
+    title.className = "history-title";
+    title.textContent = `${r.ok ? "✅" : "❌"} ${r.mode.toUpperCase()} • ${fmtDate(new Date(r.ts))}`;
 
-    const meta = document.createElement('div');
-    meta.className = 'history-meta';
-    const summary = r.ok ? (r.resultPreview ?? 'sin retorno') : (r.error?.split('\\n')[0] ?? 'error');
+    const meta = document.createElement("div");
+    meta.className = "history-meta";
+    const summary = r.ok
+      ? (r.resultPreview ?? "sin retorno")
+      : (r.error?.split("\\n")[0] ?? "error");
     meta.textContent = `Duración: ${r.durationMs}ms • ${summary}`;
 
-    const actions = document.createElement('div');
-    actions.className = 'history-actions';
+    const actions = document.createElement("div");
+    actions.className = "history-actions";
 
-    const btnShow = document.createElement('button');
-    btnShow.textContent = 'Ver';
-    btnShow.addEventListener('click', (e) => {
+    const btnShow = document.createElement("button");
+    btnShow.textContent = "Ver";
+    btnShow.addEventListener("click", (e) => {
       e.stopPropagation();
-      outputEl.innerHTML = '';
+      outputEl.innerHTML = "";
       for (const ln of r.logs) printLine(ln.text, ln.type);
-      if (r.ok) printLine(`↩︎ Retorno: ${String(r.result)}`, 'ret');
+      if (r.ok) printLine(`↩︎ Retorno: ${String(r.result)}`, "ret");
       else {
-        printLine(`✖ Error: ${r.error}`, 'err');
-        if (r.stack) printLine(r.stack, 'err');
+        printLine(`✖ Error: ${r.error}`, "err");
+        if (r.stack) printLine(r.stack, "err");
       }
     });
 
-    const btnRerun = document.createElement('button');
-    btnRerun.textContent = 'Re-ejecutar';
-    btnRerun.addEventListener('click', (e) => {
+    const btnRerun = document.createElement("button");
+    btnRerun.textContent = "Re-ejecutar";
+    btnRerun.addEventListener("click", (e) => {
       e.stopPropagation();
       setCode(r.code);
       modeSel.value = r.mode;
@@ -124,18 +137,29 @@ function renderHistory() {
       runCode();
     });
 
-    const btnExport = document.createElement('button');
-    btnExport.textContent = 'Exportar salida';
-    btnExport.addEventListener('click', async (e) => {
+    const btnExport = document.createElement("button");
+    btnExport.textContent = "Exportar salida";
+    btnExport.addEventListener("click", async (e) => {
       e.stopPropagation();
       const text = buildRunText(r);
-      try { await navigator.clipboard.writeText(text); window.ui?.message('info', 'Salida del historial copiada al portapapeles.'); }
-      catch { window.ui?.message('error', 'No se pudo copiar la salida.'); }
+      try {
+        await navigator.clipboard.writeText(text);
+        window.ui?.message(
+          "info",
+          "Salida del historial copiada al portapapeles.",
+        );
+      } catch {
+        window.ui?.message("error", "No se pudo copiar la salida.");
+      }
     });
 
     actions.append(btnShow, btnRerun, btnExport);
     el.append(title, meta, actions);
-    el.addEventListener('click', () => { setCode(r.code); modeSel.value = r.mode; setDirty(true); });
+    el.addEventListener("click", () => {
+      setCode(r.code);
+      modeSel.value = r.mode;
+      setDirty(true);
+    });
 
     historyEl.appendChild(el);
   }
@@ -148,16 +172,31 @@ function buildRunText(r) {
     `Duración: ${r.durationMs}ms`,
     `Código:\\n${r.code}`,
     `---`,
-    `Salida:`
+    `Salida:`,
   ];
-  r.logs.forEach(ln => lines.push(`[${ln.type}] ${ln.text}`));
+  r.logs.forEach((ln) => lines.push(`[${ln.type}] ${ln.text}`));
   if (r.ok) lines.push(`[ret] ${String(r.result)}`);
-  else lines.push(`[err] ${r.error}\\n${r.stack ?? ''}`);
-  return lines.join('\\n');
+  else lines.push(`[err] ${r.error}\\n${r.stack ?? ""}`);
+  return lines.join("\\n");
+}
+
+function setHistoryOpen(open) {
+  document.body.classList.toggle("has-history-open", open);
+  if (toggleHistoryBtn)
+    toggleHistoryBtn.textContent = open ? "Historial ◂" : "Historial ▸";
+  try {
+    localStorage.setItem("historyOpen", open ? "1" : "0");
+  } catch {}
 }
 
 // ===== Persistencia de historial
-const debounced = (fn, ms = 500) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
+const debounced = (fn, ms = 500) => {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
+};
 async function loadHistory() {
   const res = await window.history.load();
   if (res?.ok) {
@@ -166,15 +205,17 @@ async function loadHistory() {
     renderHistory();
   }
 }
-const saveHistoryNow = async () => { await window.history.save({ version: 1, runs }); };
+const saveHistoryNow = async () => {
+  await window.history.save({ version: 1, runs });
+};
 const saveHistory = debounced(saveHistoryNow, 600);
 
-clearHistoryBtn?.addEventListener('click', async () => {
+clearHistoryBtn?.addEventListener("click", async () => {
   runs = [];
   renderHistory();
   await window.history.clear();
 });
-saveHistoryBtn?.addEventListener('click', saveHistoryNow);
+saveHistoryBtn?.addEventListener("click", saveHistoryNow);
 
 // ===== Auto-guardado incremental
 function startAutosave() {
@@ -189,54 +230,78 @@ function startAutosave() {
         autosaveStatusEl.textContent = `Auto-guardado en ${currentFilePath}`;
       } else {
         const res = await window.files.autoSave(code, keep);
-        if (res?.ok) autosaveStatusEl.textContent = `Auto-guardado (${keep} versiones) en ${res.dir}`;
+        if (res?.ok)
+          autosaveStatusEl.textContent = `Auto-guardado (${keep} versiones) en ${res.dir}`;
       }
     } catch {
       autosaveStatusEl.textContent = `Auto-guardado falló`;
     }
   }, secs * 1000);
-  autosaveStatusEl.textContent = `Auto-guardado activo (${secs}s${autosaveKeepEl ? `, mantener ${Math.max(1, Number(autosaveKeepEl.value||10))}`:''})`;
+  autosaveStatusEl.textContent = `Auto-guardado activo (${secs}s${autosaveKeepEl ? `, mantener ${Math.max(1, Number(autosaveKeepEl.value || 10))}` : ""})`;
 }
-function stopAutosave() { if (autosaveTimer) clearInterval(autosaveTimer); autosaveTimer = null; autosaveStatusEl.textContent = ''; }
+function stopAutosave() {
+  if (autosaveTimer) clearInterval(autosaveTimer);
+  autosaveTimer = null;
+  autosaveStatusEl.textContent = "";
+}
 
 // ===== Ejecución
 function runCode() {
-  outputEl.innerHTML = '';
+  outputEl.innerHTML = "";
   const code = getCode();
   const mode = modeSel.value;
 
-  currentRun = { id: nextRunId(), ts: Date.now(), mode, code, logs: [], ok: false, result: undefined, resultPreview: undefined, error: null, stack: null, durationMs: 0, _t0: performance.now() };
+  currentRun = {
+    id: nextRunId(),
+    ts: Date.now(),
+    mode,
+    code,
+    logs: [],
+    ok: false,
+    result: undefined,
+    resultPreview: undefined,
+    error: null,
+    stack: null,
+    durationMs: 0,
+    _t0: performance.now(),
+  };
 
-  const send = () => iframe.contentWindow.postMessage({ type: 'run', code, mode }, '*');
+  const send = () =>
+    iframe.contentWindow.postMessage({ type: "run", code, mode }, "*");
 
-  if (iframe.dataset.ready === '1') send();
+  if (iframe.dataset.ready === "1") send();
   else {
-    const onLoad = () => { iframe.dataset.ready = '1'; iframe.removeEventListener('load', onLoad); send(); };
-    iframe.addEventListener('load', onLoad);
-    iframe.src = './executor.html';
+    const onLoad = () => {
+      iframe.dataset.ready = "1";
+      iframe.removeEventListener("load", onLoad);
+      send();
+    };
+    iframe.addEventListener("load", onLoad);
+    iframe.src = "./executor.html";
   }
 }
 
-window.addEventListener('message', (ev) => {
+window.addEventListener("message", (ev) => {
   const { type } = ev.data || {};
-  if (type === 'console') {
-    printLine(String(ev.data.message), 'log');
-  } else if (type === 'result') {
+  if (type === "console") {
+    printLine(String(ev.data.message), "log");
+  } else if (type === "result") {
     const ret = ev.data.returnValue;
-    printLine(`↩︎ Retorno: ${String(ret)}`, 'ret');
+    printLine(`↩︎ Retorno: ${String(ret)}`, "ret");
     if (currentRun) {
       currentRun.ok = true;
       currentRun.result = ret;
-      currentRun.resultPreview = (ret === undefined) ? 'undefined' : String(ret).slice(0, 80);
+      currentRun.resultPreview =
+        ret === undefined ? "undefined" : String(ret).slice(0, 80);
       currentRun.durationMs = Math.round(performance.now() - currentRun._t0);
       runs.push({ ...currentRun, _t0: undefined });
       currentRun = null;
       renderHistory();
       saveHistory();
     }
-  } else if (type === 'error') {
-    printLine(`✖ Error: ${ev.data.error}`, 'err');
-    if (ev.data.stack) printLine(ev.data.stack, 'err');
+  } else if (type === "error") {
+    printLine(`✖ Error: ${ev.data.error}`, "err");
+    if (ev.data.stack) printLine(ev.data.stack, "err");
     if (currentRun) {
       currentRun.ok = false;
       currentRun.error = ev.data.error;
@@ -250,30 +315,58 @@ window.addEventListener('message', (ev) => {
   }
 });
 
-runBtn?.addEventListener('click', runCode);
-clearBtn?.addEventListener('click', () => (outputEl.innerHTML = ''));
-copyBtn?.addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(outputEl.innerText || ''); window.ui?.message('info', 'Salida copiada al portapapeles.'); }
-  catch { window.ui?.message('error', 'No se pudo copiar la salida.'); }
+runBtn?.addEventListener("click", runCode);
+clearBtn?.addEventListener("click", () => (outputEl.innerHTML = ""));
+copyBtn?.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(outputEl.innerText || "");
+    window.ui?.message("info", "Salida copiada al portapapeles.");
+  } catch {
+    window.ui?.message("error", "No se pudo copiar la salida.");
+  }
+});
+
+toggleHistoryBtn?.addEventListener("click", () => {
+  const open = !document.body.classList.contains("has-history-open");
+  setHistoryOpen(open);
 });
 
 // Atajos
-window.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.key === 'Enter') runCode();
-  if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); doSave(); }
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') { e.preventDefault(); doSaveAs(); }
-  if (e.ctrlKey && e.key.toLowerCase() === 'o') { e.preventDefault(); doOpen(); }
+window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key === "Enter") runCode();
+  if (e.ctrlKey && e.key.toLowerCase() === "s") {
+    e.preventDefault();
+    doSave();
+  }
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") {
+    e.preventDefault();
+    doSaveAs();
+  }
+  if (e.ctrlKey && e.key.toLowerCase() === "o") {
+    e.preventDefault();
+    doOpen();
+  }
+  if (e.ctrlKey && e.key.toLowerCase() === "h") {
+    e.preventDefault();
+    const open = !document.body.classList.contains("has-history-open");
+    setHistoryOpen(open);
+  }
 });
 
 // ===== Archivo
 async function doOpen() {
-  if (dirty) { const ok = confirm('Hay cambios sin guardar. ¿Deseas continuar sin guardar?'); if (!ok) return; }
+  if (dirty) {
+    const ok = confirm(
+      "Hay cambios sin guardar. ¿Deseas continuar sin guardar?",
+    );
+    if (!ok) return;
+  }
   const res = await window.files.open();
   if (res?.canceled) return;
-  setCode(res.content ?? '');
+  setCode(res.content ?? "");
   currentFilePath = res.filePath ?? null;
   setDirty(false);
-  outputEl.innerHTML = '';
+  outputEl.innerHTML = "";
 }
 async function doSave() {
   if (!currentFilePath) return doSaveAs();
@@ -281,7 +374,9 @@ async function doSave() {
   setDirty(false);
 }
 async function doSaveAs() {
-  const suggested = currentFilePath ? currentFilePath.split(/[\\/]/).pop() : 'script.js';
+  const suggested = currentFilePath
+    ? currentFilePath.split(/[\\/]/).pop()
+    : "script.js";
   const res = await window.files.saveAs(suggested, getCode());
   if (res?.canceled) return;
   currentFilePath = res.filePath;
@@ -289,12 +384,25 @@ async function doSaveAs() {
 }
 
 // Auto-guardado UI
-autosaveEnableEl?.addEventListener('change', () => { autosaveEnableEl.checked ? startAutosave() : stopAutosave(); });
-autosaveSecsEl?.addEventListener('change', () => { if (autosaveEnableEl.checked) startAutosave(); });
-autosaveKeepEl?.addEventListener('change', () => { if (autosaveEnableEl.checked) startAutosave(); });
+autosaveEnableEl?.addEventListener("change", () => {
+  autosaveEnableEl.checked ? startAutosave() : stopAutosave();
+});
+autosaveSecsEl?.addEventListener("change", () => {
+  if (autosaveEnableEl.checked) startAutosave();
+});
+autosaveKeepEl?.addEventListener("change", () => {
+  if (autosaveEnableEl.checked) startAutosave();
+});
 
 // Inicio
 (async function init() {
   await initMonaco();
   await loadHistory();
+
+  // Iniciar minimizado (o leer preferencia guardada)
+  let pref = "0";
+  try {
+    pref = localStorage.getItem("historyOpen") || "0";
+  } catch {}
+  setHistoryOpen(pref === "1"); // '0' = minimizado; '1' = abierto
 })();
