@@ -335,6 +335,7 @@ toggleHistoryBtn?.addEventListener("click", () => {
 window.addEventListener("keydown", (e) => {
   if (e.ctrlKey && e.key === "Enter") runCode();
   if (e.ctrlKey && e.key.toLowerCase() === "s") {
+    console.log("doSave");
     e.preventDefault();
     doSave();
   }
@@ -369,9 +370,25 @@ async function doOpen() {
   outputEl.innerHTML = "";
 }
 async function doSave() {
-  if (!currentFilePath) return doSaveAs();
-  await window.files.save(currentFilePath, getCode());
-  setDirty(false);
+  const code = getCode(); // o codeEl.value si usas textarea
+  // Si no hay ruta actual, pasamos un nombre sugerido
+  const res = await window.files.save(
+    currentFilePath,
+    code,
+    currentFilePath ? undefined : "script.js",
+  );
+
+  if (res?.ok) {
+    // Si era nuevo, ahora ya tenemos ruta real
+    if (!currentFilePath && res.filePath) currentFilePath = res.filePath;
+    setDirty(false);
+    window.ui?.message?.("info", "Archivo guardado correctamente.");
+  } else if (res?.canceled) {
+    // Usuario canceló el diálogo de guardar
+    // (No hacemos nada; opcional mostrar aviso suave)
+  } else {
+    window.ui?.message?.("error", res?.error || "Error al guardar el archivo.");
+  }
 }
 async function doSaveAs() {
   const suggested = currentFilePath
